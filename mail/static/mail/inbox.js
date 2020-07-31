@@ -1,9 +1,17 @@
-document.addEventListener('DOMContentLoaded', function() {
-
+document.addEventListener('DOMContentLoaded', function () {
   // Use buttons to toggle between views
-  document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
-  document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
-  document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
+  document
+    .querySelector('#inbox')
+    .addEventListener('click', () => load_mailbox('inbox'));
+
+  document
+    .querySelector('#sent')
+    .addEventListener('click', () => load_mailbox('sent'));
+
+  document
+    .querySelector('#archived')
+    .addEventListener('click', () => load_mailbox('archive'));
+
   document.querySelector('#compose').addEventListener('click', compose_email);
 
   // By default, load the inbox
@@ -11,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function compose_email() {
-
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
@@ -23,11 +30,35 @@ function compose_email() {
 }
 
 function load_mailbox(mailbox) {
-  
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  document.querySelector('#emails-view').innerHTML = `<h3>${
+    mailbox.charAt(0).toUpperCase() + mailbox.slice(1)
+  }</h3>`;
+
+  fetch(`/emails/${mailbox}`)
+    .then((response) => response.json())
+    .then((data) => {
+      data.map((element) => {
+        const divEl = document.createElement('div');
+
+        divEl.innerHTML = `
+          <p>Sender: ${element.sender}</p>
+
+          <p>Recipients: ${element.recipients
+            .map((recipient) => `<span>${recipient} | </span>`)
+            .join('')}</p>
+
+          <p>Subject: ${element.subject}</p>
+          <p>Timestamp: ${element.timestamp}</p>
+    `;
+        document.querySelector('#emails-view').append(divEl);
+      });
+    })
+    .catch((error) => {
+      console.log('Error:', error);
+    });
 }
