@@ -1,3 +1,29 @@
 textarea {
     min-height: 400px;
 }
+
+.inbox-message {
+    display: flex;
+    justify-content: space-between;
+    border: black 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.inbox-message:hover {
+    cursor: pointer;
+    background-color: azure;
+}
+
+.unread {
+    background-color: white;
+}
+
+.read {
+    background-color: lightgray;
+}
+
+.message {
+    margin-top: 10px;
+}
