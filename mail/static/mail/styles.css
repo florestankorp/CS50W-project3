@@ -1,3 +1,8 @@
+.container {
+    width: 65%;
+    margin: 0 auto;
+}
+
 textarea {
     min-height: 400px;
 }
@@ -26,4 +31,23 @@ textarea {
 
 .message {
     margin-top: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.form-container {
+    width: 50%;
+    margin: 0 auto;
+}
+
+#archive {
+    margin-left: 15px;
+}
+
+.welcome {
+    width: 27%;
+    margin: 0 auto;
+    margin-top: 19px;
 }

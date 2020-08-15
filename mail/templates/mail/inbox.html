@@ -2,20 +2,44 @@
 {% load static %}
 
 {% block body %}
-<h2>{{ request.user.email }}</h2>
+<!-- set global variable name userEmail so it can be accessed in JS code -->
+{{ request.user.email | json_script:"userEmail" }}
 
-<button class="btn btn-sm btn-outline-primary"
-        id="inbox">Inbox</button>
-<button class="btn btn-sm btn-outline-primary"
-        id="compose">Compose</button>
-<button class="btn btn-sm btn-outline-primary"
-        id="sent">Sent</button>
-<button class="btn btn-sm btn-outline-primary"
-        id="archived">Archived</button>
-<a class="btn btn-sm btn-outline-primary"
-   href="{% url 'logout' %}">Log Out</a>
-<hr>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+            <a class="nav-link"
+               href="#"
+               id="inbox">Inbox</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               href="#"
+               id="compose">Compose</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               href="#"
+               id="sent">Sent</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               href="#"
+               id="archived">Archived</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               href="{% url 'logout' %}">Log Out</a>
+        </li>
+        <li class="nav-item">
+            <div class="nav-link disabled">
+                <span> | </span>
+                <span class="bold">{{ request.user.email }}</span>
+            </div>
+        </li>
 
+    </ul>
+</nav>
 <div id="email-view">
 </div>
 
@@ -23,32 +47,31 @@
 </div>
 
 <div id="compose-view">
-        <h3>New Email</h3>
-        <form id="compose-form">
-                <div class="form-group">
-                        From: <input disabled
-                               class="form-control"
-                               value="{{ request.user.email }}">
-                </div>
-                <div class="form-group">
-                        To: <input id="compose-recipients"
-                               class="form-control">
-                </div>
-                <div class="form-group">
-                        <input class="form-control"
-                               id="compose-subject"
-                               placeholder="Subject">
-                </div>
-                <textarea class="form-control"
-                          id="compose-body"
-                          placeholder="Body"></textarea>
-                <input type="submit"
-                       class="btn btn-primary" />
-        </form>
+    <h3>New Email</h3>
+    <form id="compose-form">
+        <div class="form-group">
+            From: <input disabled
+                   class="form-control"
+                   value="{{ request.user.email }}">
+        </div>
+        <div class="form-group">
+            To: <input id="compose-recipients"
+                   class="form-control">
+        </div>
+        <div class="form-group">
+            <input class="form-control"
+                   id="compose-subject"
+                   placeholder="Subject">
+        </div>
+        <textarea class="form-control"
+                  id="compose-body"
+                  placeholder="Body"></textarea>
+        <input type="submit"
+               class="btn btn-primary" />
+    </form>
 </div>
 {% endblock %}
 
 {% block script %}
-<script src="
-                       {% static 'mail/inbox.js' %}"></script>
+<script src="{% static 'mail/inbox.js' %}"></script>
 {% endblock %}

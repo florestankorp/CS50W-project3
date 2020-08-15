@@ -1,0 +1,7 @@
+When user 
+ * clicks nav items: load the appropriate mailbox.
+ * clicks on email: show the email
+ * submits compose form: email is sent
+ * clicks archive / unarchive: toglle state
+ * clicks reply: display prefilled compose form
+ * submits reply form: reply is sent

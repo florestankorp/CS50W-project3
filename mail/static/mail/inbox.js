@@ -1,3 +1,15 @@
+const VIEWS = {
+  EMAIL_VIEW: '#email-view',
+  EMAILS_VIEW: '#emails-view',
+  COMPOSE_VIEW: '#compose-view',
+};
+
+const SELECTORS = {
+  COMPOSE_RECIPIENTS: '#compose-recipients',
+  COMPOSE_SUBJECT: '#compose-subject',
+  COMPOSE_BODY: '#compose-body',
+};
+
 document.addEventListener('DOMContentLoaded', function () {
   // Use buttons to toggle between views
   document
@@ -10,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document
     .querySelector('#archived')
-    .addEventListener('click', () => loadMailbox('archive'));
+    .addEventListener('click', () => loadMailbox('archived'));
 
   document.querySelector('#compose').addEventListener('click', composeEmail);
 
@@ -23,25 +35,23 @@ function composeEmail() {
     .querySelector('form')
     .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
 
-  // Show compose view and hide other views
-  document.querySelector('#email-view').style.display = 'none';
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'block';
+  show(VIEWS.COMPOSE_VIEW);
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+  document.querySelector(SELECTORS.COMPOSE_RECIPIENTS).value = '';
+  document.querySelector(SELECTORS.COMPOSE_SUBJECT).value = '';
+  document.querySelector(SELECTORS.COMPOSE_BODY).value = '';
 }
 
 function viewEmail(emailId) {
-  let EMAIL;
-  document.querySelector('#email-view').style.display = 'block';
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'none';
+  const userEmail = JSON.parse(
+    document.getElementById('userEmail').textContent
+  );
+
+  show(VIEWS.EMAIL_VIEW);
 
   // Clear messages before loading selected message
-  document.querySelector('#email-view').innerHTML = '';
+  document.querySelector(VIEWS.EMAIL_VIEW).innerHTML = '';
 
   // Mark as read
   fetch(`/emails/${emailId}`, {
@@ -56,35 +66,48 @@ function viewEmail(emailId) {
   fetch(`/emails/${emailId}`)
     .then((response) => response.json())
     .then((data) => {
-      EMAIL = data;
       const divEl = document.createElement('div');
       let buttonContainerEl = document.createElement('div');
+
       const unarchiveButton = `<button class="btn btn-danger" id="archive">Unarchive</button>`;
       const archiveButton = `<button class="btn btn-primary" id="archive">Archive</button>`;
       const replyButton = `<button class="btn btn-primary" id="reply">Reply</button>`;
 
       buttonContainerEl.innerHTML += replyButton;
 
-      data.archived
-        ? (buttonContainerEl.innerHTML += unarchiveButton)
-        : (buttonContainerEl.innerHTML += archiveButton);
+      if (data.sender !== userEmail) {
+        if (data.archived) {
+          buttonContainerEl.innerHTML += unarchiveButton;
+        } else {
+          buttonContainerEl.innerHTML += archiveButton;
+        }
+      }
 
       divEl.className = 'message';
       divEl.innerHTML = `
-        <p>From: ${data.sender}</p>
-        <p>To: ${data.recipients.map(
-          (recipient) => `<span> ${recipient}</span>`
-        )}</p>
-        <p>Subject: ${data.subject}</p>
-        <p>Timestamp: ${data.timestamp}</p>
-        <p>${data.body}</p>`;
+      <div class="card">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+          <p>From: ${data.sender}</p>
+          <p>To: ${data.recipients.map(
+            (recipient) => `<span>${recipient}</span>`
+          )}</p>
+          <p><small class="text-muted">${data.timestamp}</small></p>
+          </li>
+          </li>
+          <li class="list-group-item">Subject: ${data.subject}</li>
+        </ul>
+        <div class="card-body">
+          <p class="card-text">${data.body}</p>
+        </div>
+      </div>`;
 
-      document.querySelector('#email-view').append(buttonContainerEl);
-      document.querySelector('#email-view').append(divEl);
+      document.querySelector(VIEWS.EMAIL_VIEW).append(buttonContainerEl);
+      document.querySelector(VIEWS.EMAIL_VIEW).append(divEl);
 
       document
         .querySelector('#reply')
-        .addEventListener('click', (submitEvent) => reply(submitEvent, EMAIL));
+        .addEventListener('click', (submitEvent) => reply(submitEvent, data));
 
       document
         .querySelector('#archive')
@@ -98,11 +121,32 @@ function viewEmail(emailId) {
 }
 
 function loadMailbox(mailbox) {
-  document.querySelector('#emails-view').style.display = 'block';
-  document.querySelector('#email-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'none';
+  show(VIEWS.EMAILS_VIEW);
 
-  document.querySelector('#emails-view').innerHTML = `<h3>${
+  document.querySelector(VIEWS.EMAILS_VIEW).innerHTML = `
+  <div>
+        <h3 id="emails-view-title"></h3>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">From</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+  `;
+
+  // remove active state when mailbox link is clicked and only make current one active
+  document
+    .querySelectorAll('.active')
+    .forEach((el) => el.classList.remove('active'));
+  document.querySelector(`#${mailbox}`).classList.add('active');
+
+  document.querySelector('#emails-view-title').innerHTML = `<h3>${
     mailbox.charAt(0).toUpperCase() + mailbox.slice(1)
   }</h3>`;
 
@@ -110,21 +154,22 @@ function loadMailbox(mailbox) {
     .then((response) => response.json())
     .then((data) => {
       data.map((element) => {
-        const divEl = document.createElement('div');
-        divEl.className = 'inbox-message';
+        const tableRowEl = document.createElement('tr');
 
         element.read
-          ? divEl.classList.add('read')
-          : divEl.classList.add('unread');
+          ? tableRowEl.classList.add('table-light')
+          : tableRowEl.classList.add('table-dark');
 
-        divEl.addEventListener('click', () => viewEmail(element.id));
+        tableRowEl.addEventListener('click', () => viewEmail(element.id));
 
-        divEl.innerHTML = `
-            <span>${element.sender}</span>
-            <span>${element.subject}</span>
-            <span>${element.timestamp}</span>
+        tableRowEl.innerHTML = `
+          <td>${element.sender}</td>
+          <td>${element.subject}</td>
+          <td>${element.timestamp}</td>
           `;
-        document.querySelector('#emails-view').append(divEl);
+        document
+          .querySelector('#emails-view > div > table > tbody')
+          .append(tableRowEl);
       });
     })
     .catch((error) => {
@@ -135,9 +180,9 @@ function loadMailbox(mailbox) {
 function sendMail(submitEvent) {
   submitEvent.preventDefault();
 
-  const recipients = document.querySelector('#compose-recipients').value;
-  const subject = document.querySelector('#compose-subject').value;
-  const body = document.querySelector('#compose-body').value;
+  const recipients = document.querySelector(SELECTORS.COMPOSE_RECIPIENTS).value;
+  const subject = document.querySelector(SELECTORS.COMPOSE_SUBJECT).value;
+  const body = document.querySelector(SELECTORS.COMPOSE_BODY).value;
 
   fetch('/emails', {
     method: 'POST',
@@ -188,15 +233,21 @@ function reply(submitEvent, { subject, body, timestamp, sender }) {
     .querySelector('form')
     .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
 
-  // Show compose view and hide other views
-  document.querySelector('#email-view').style.display = 'none';
-  document.querySelector('#emails-view').style.display = 'none';
-  document.querySelector('#compose-view').style.display = 'block';
+  show(VIEWS.COMPOSE_VIEW);
 
   // Pre-fill composition fields
-  document.querySelector('#compose-recipients').value = sender;
-  document.querySelector('#compose-subject').value = replySubject;
+  document.querySelector(SELECTORS.COMPOSE_RECIPIENTS).value = sender;
+  document.querySelector(SELECTORS.COMPOSE_SUBJECT).value = replySubject;
   document.querySelector(
-    '#compose-body'
-  ).value = `On ${timestamp} ${sender} wrote: ${body}`;
+    SELECTORS.COMPOSE_BODY
+  ).value = `On: ${timestamp}\n${sender} wrote: \n${body}\n${'* '.repeat(12)}
+  `;
+}
+
+function show(selector) {
+  Object.keys(VIEWS).forEach((key) => {
+    VIEWS[key] === selector
+      ? (document.querySelector(VIEWS[key]).style.display = 'block')
+      : (document.querySelector(VIEWS[key]).style.display = 'none');
+  });
 }
