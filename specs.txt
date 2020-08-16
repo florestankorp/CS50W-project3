@@ -1,7 +1,8 @@
 When user 
- * clicks nav items: load the appropriate mailbox.
- * clicks on email: show the email
- * submits compose form: email is sent
- * clicks archive / unarchive: toglle state
- * clicks reply: display prefilled compose form
- * submits reply form: reply is sent
+ * clicks nav items: load the appropriate mailbox.
+ * submits compose form: email is sent
+ * clicks on email: show the email
+ * clicks archive / unarchive: toggle archived state
+ * toggle archived button not present on sent mails
+ * clicks reply: display prefilled compose form
+ * submits reply form: reply is sent

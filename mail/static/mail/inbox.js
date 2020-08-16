@@ -13,6 +13,10 @@ const SELECTORS = {
 document.addEventListener('DOMContentLoaded', function () {
   // Use buttons to toggle between views
   document
+    .querySelector('form')
+    .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
+
+  document
     .querySelector('#inbox')
     .addEventListener('click', () => loadMailbox('inbox'));
 
@@ -31,10 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function composeEmail() {
-  document
-    .querySelector('form')
-    .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
-
   show(VIEWS.COMPOSE_VIEW);
 
   // Clear out composition fields
@@ -68,7 +68,7 @@ function viewEmail(emailId) {
     .then((data) => {
       const divEl = document.createElement('div');
       let buttonContainerEl = document.createElement('div');
-
+      buttonContainerEl.className = 'button-container';
       const unarchiveButton = `<button class="btn btn-danger" id="archive">Unarchive</button>`;
       const archiveButton = `<button class="btn btn-primary" id="archive">Archive</button>`;
       const replyButton = `<button class="btn btn-primary" id="reply">Reply</button>`;
@@ -140,7 +140,7 @@ function loadMailbox(mailbox) {
     </div>
   `;
 
-  // remove active state when mailbox link is clicked and only make current one active
+  // remove active state in navbar when mailbox link is clicked and only make current one active
   document
     .querySelectorAll('.active')
     .forEach((el) => el.classList.remove('active'));
@@ -222,18 +222,13 @@ function toggleArchived(submitEvent, emailId, isArchived) {
 
 function reply(submitEvent, { subject, body, timestamp, sender }) {
   submitEvent.preventDefault();
+  show(VIEWS.COMPOSE_VIEW);
 
   // If subject already starts with 'RE:' don't add more
   const replyRegex = /RE:/;
   const replySubject = replyRegex.test(subject.substring(0, 3))
     ? subject
     : `RE: ${subject}`;
-
-  document
-    .querySelector('form')
-    .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
-
-  show(VIEWS.COMPOSE_VIEW);
 
   // Pre-fill composition fields
   document.querySelector(SELECTORS.COMPOSE_RECIPIENTS).value = sender;
