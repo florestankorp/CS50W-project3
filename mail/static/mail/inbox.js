@@ -12,9 +12,6 @@ const SELECTORS = {
 
 document.addEventListener('DOMContentLoaded', function () {
   // Use buttons to toggle between views
-  document
-    .querySelector('form')
-    .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
 
   document
     .querySelector('#inbox')
@@ -30,6 +27,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.querySelector('#compose').addEventListener('click', composeEmail);
 
+  // register submit event listener
+  document
+    .querySelector('form')
+    .addEventListener('submit', (submitEvent) => sendMail(submitEvent));
+
   // By default, load the inbox
   loadMailbox('inbox');
 });
@@ -44,14 +46,11 @@ function composeEmail() {
 }
 
 function viewEmail(emailId) {
+  show(VIEWS.EMAIL_VIEW);
+
   const userEmail = JSON.parse(
     document.getElementById('userEmail').textContent
   );
-
-  show(VIEWS.EMAIL_VIEW);
-
-  // Clear messages before loading selected message
-  document.querySelector(VIEWS.EMAIL_VIEW).innerHTML = '';
 
   // Mark as read
   fetch(`/emails/${emailId}`, {
@@ -75,6 +74,7 @@ function viewEmail(emailId) {
 
       buttonContainerEl.innerHTML += replyButton;
 
+      // only add toggle archive button if user is not sender (can't archive own)
       if (data.sender !== userEmail) {
         if (data.archived) {
           buttonContainerEl.innerHTML += unarchiveButton;
