@@ -47,6 +47,7 @@ function composeEmail() {
 
 function viewEmail(emailId) {
   show(VIEWS.EMAIL_VIEW);
+  document.querySelector(VIEWS.EMAIL_VIEW).innerHTML = '';
 
   const userEmail = JSON.parse(
     document.getElementById('userEmail').textContent
@@ -121,9 +122,27 @@ function viewEmail(emailId) {
 }
 
 function loadMailbox(mailbox) {
+  console.log(mailbox);
   show(VIEWS.EMAILS_VIEW);
-
-  document.querySelector(VIEWS.EMAILS_VIEW).innerHTML = `
+  if (mailbox === 'sent') {
+    document.querySelector(VIEWS.EMAILS_VIEW).innerHTML = `
+  <div>
+        <h3 id="emails-view-title"></h3>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">To</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+  `;
+  } else {
+    document.querySelector(VIEWS.EMAILS_VIEW).innerHTML = `
   <div>
         <h3 id="emails-view-title"></h3>
         <table class="table table-hover">
@@ -139,6 +158,7 @@ function loadMailbox(mailbox) {
         </table>
     </div>
   `;
+  }
 
   // remove active state in navbar when mailbox link is clicked and only make current one active
   document
@@ -157,16 +177,27 @@ function loadMailbox(mailbox) {
         const tableRowEl = document.createElement('tr');
 
         element.read
-          ? tableRowEl.classList.add('table-light')
-          : tableRowEl.classList.add('table-dark');
+          ? tableRowEl.classList.add('table-dark')
+          : tableRowEl.classList.add('table-light');
 
         tableRowEl.addEventListener('click', () => viewEmail(element.id));
+        if (mailbox === 'sent') {
+          tableRowEl.innerHTML = `
+            <td>${element.sender}</td>
+            <td>${element.recipients.map(
+              (recipient) => `<span>${recipient}</span>`
+            )}</td>
+            <td>${element.subject}</td>
+            <td>${element.timestamp}</td>
+            `;
+        } else {
+          tableRowEl.innerHTML = `
+            <td>${element.sender}</td>
+            <td>${element.subject}</td>
+            <td>${element.timestamp}</td>
+            `;
+        }
 
-        tableRowEl.innerHTML = `
-          <td>${element.sender}</td>
-          <td>${element.subject}</td>
-          <td>${element.timestamp}</td>
-          `;
         document
           .querySelector('#emails-view > div > table > tbody')
           .append(tableRowEl);
